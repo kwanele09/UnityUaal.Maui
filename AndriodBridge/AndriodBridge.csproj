@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net9.0-android</TargetFramework>
+		<SupportedOSPlatformVersion>33</SupportedOSPlatformVersion>
+		<TargetSdkVersion>33</TargetSdkVersion>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AndroidUseDesignerAssembly>true</AndroidUseDesignerAssembly>
+		<IsTrimmable>true</IsTrimmable>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AndroidLibrary Include="Jars\unityLibrary-release.aar" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.0.6" />
+		<PackageReference Include="Xamarin.AndroidX.Collection" Version="1.5.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Fragment" Version="1.8.6.1" />
+		<PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.3" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Base" Version="118.7.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Tasks" Version="118.3.0.1" />
+	</ItemGroup>
+</Project>

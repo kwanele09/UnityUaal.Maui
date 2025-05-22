@@ -1,0 +1,41 @@
+﻿<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.companyname.unityuaalmaui"
+          android:versionCode="1"
+          android:versionName="1.0">
+
+	<!-- Declare minimum SDK version -->
+	<uses-sdk android:minSdkVersion="24" android:targetSdkVersion="35"/>
+
+	<!-- Permissions for camera and internet access -->
+	<uses-permission android:name="android.permission.CAMERA"/>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+	<!-- Optional: Declare camera hardware feature -->
+	<uses-feature android:name="android.hardware.camera" android:required="true"/>
+
+	<application
+        android:largeHeap="true"
+        android:allowBackup="true"
+        android:icon="@mipmap/appicon"
+        android:label="UnityUaalMaui"
+        tools:replace="android:allowBackup">
+
+		<!-- Unity Player Activity with tools:replace to resolve conflicts -->
+		<activity
+            android:name="com.unity3d.player.UnityPlayerActivity"
+            android:theme="@style/UnityThemeSelector"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="true"
+            tools:replace="android:theme,android:configChanges">
+
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER"/>
+			</intent-filter>
+		</activity>
+
+	</application>
+</manifest>
