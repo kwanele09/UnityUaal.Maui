@@ -28,27 +28,6 @@ This repository demonstrates how to embed a **Unity Android activity** inside a 
 
 ## 📂 Project Structure
 
-```
-
-UnityUaalMaui/
-│
-├── Platforms/
-│   └── Android/
-│       ├── jars/
-│       │   └── unityLibrary-release.aar         # Exported Unity AAR goes here
-│       ├── UnityActivity.cs                     # Custom Android Activity to host Unity
-│       ├── UnityPlayerForActivityOrService.cs   # Unity lifecycle and player integration
-│       ├── UnityBridge.cs                       # Sends events to Unity
-│       └── Unity/                               # MAUI-to-Unity bridge and message coordination
-│           ├── MessageDispatcher.cs
-│           └── IUnityBridge.cs
-│
-├── MauiProgram.cs
-├── MainPage.xaml.cs
-└── README.md
-
-````
-
 ---
 
 ## 🧩 Setup Instructions
