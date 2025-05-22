@@ -1,19 +1,16 @@
-Sure, Kwanele! Here's a complete `README.md` file tailored for your Unity + MAUI Android integration project using `UnityPlayerForActivityOrService`. This guide covers the purpose, setup, and usage for other developers to understand and work with the project effectively.
-
----
-
 ```markdown
 # UnityUaalMaui
 
-This repository demonstrates how to embed a **Unity Android activity** inside a **.NET MAUI** application using **Unity as a Library (UAAL)** integration. The `UnityActivity.cs` file acts as a bridge to handle Unity’s lifecycle and communication with the native Android side.
+This repository demonstrates how to embed a **Unity Android activity** inside a **.NET MAUI** application using **Unity as a Library (UAAL)** integration. The Unity activity is launched from MAUI and communicates back and forth using a bridge layer.
 
 ## 📌 Features
 
-- Unity embedded as a secondary activity inside a .NET MAUI project.
-- Full Unity lifecycle handling (pause, resume, destroy).
-- Native-to-Unity messaging bridge.
+- Unity embedded as a secondary Android activity in a .NET MAUI app.
+- Unity exported as an `.aar` and included under `Platforms/Android/jars`.
+- Complete lifecycle management (pause, resume, destroy).
+- Communication bridge between MAUI and Unity using Unity’s `UnitySendMessage`.
 - Permission request support (e.g., camera).
-- Handles input events like key presses and touch events.
+- Input handling (touch, key events).
 
 ---
 
@@ -21,11 +18,11 @@ This repository demonstrates how to embed a **Unity Android activity** inside a 
 
 - **Visual Studio 2022/2023** with .NET MAUI workload.
 - **Unity Editor 2021+**.
-- **Android SDK and NDK** configured.
+- **Android SDK/NDK** correctly set up.
 - Basic understanding of:
-  - MAUI / Xamarin.Android
-  - Unity Android Build
-  - Android Activities and Permissions
+  - MAUI and Xamarin.Android internals
+  - Unity Android builds using UAAL
+  - Android native activity management
 
 ---
 
@@ -35,10 +32,19 @@ This repository demonstrates how to embed a **Unity Android activity** inside a 
 
 UnityUaalMaui/
 │
-├── UnityActivity.cs              # Custom Android Activity to host Unity
-├── UnityPlayerForActivityOrService.cs
-├── UnityBridge.cs                # Handles communication with Unity
-├── \[Unity Project Exported as AAR or .unitypackage]
+├── Platforms/
+│   └── Android/
+│       ├── jars/
+│       │   └── unityLibrary-release.aar         # Exported Unity AAR goes here
+│       ├── UnityActivity.cs                     # Custom Android Activity to host Unity
+│       ├── UnityPlayerForActivityOrService.cs   # Unity lifecycle and player integration
+│       ├── UnityBridge.cs                       # Sends events to Unity
+│       └── Unity/                               # MAUI-to-Unity bridge and message coordination
+│           ├── MessageDispatcher.cs
+│           └── IUnityBridge.cs
+│
+├── MauiProgram.cs
+├── MainPage.xaml.cs
 └── README.md
 
 ````
@@ -47,61 +53,43 @@ UnityUaalMaui/
 
 ## 🧩 Setup Instructions
 
-### Step 1: Export Unity Project as Android Library
+### Step 1: Export Unity Project as AAR
 
-1. Open your Unity project.
-2. Go to `File > Build Settings`, select **Android**.
-3. Check "Export as Google Android project" (or use Unity as a Library).
-4. Export the project and build a `.aar` or `.unitypackage`.
+1. Open Unity.
+2. Switch platform to **Android**.
+3. Under `File > Build Settings`, enable **Export as a Google Android Project** or build as an **Android Library (.aar)** using Unity's `UnityLibrary` template.
+4. Build and locate the generated `.aar` (usually in `/build/outputs/aar`).
+5. Copy the `.aar` into `Platforms/Android/jars/`.
 
-> 📁 Place the exported AAR or Unity files inside the `UnityUaalMaui` project or link it using Gradle if using a native Android module.
+> ✅ No need to use Gradle. The `.aar` file will be packaged with your MAUI app as a direct reference.
 
 ---
 
-### Step 2: Add Unity Activity
+### Step 2: Register Unity Activity
 
-- The `UnityActivity` class extends `Android.App.Activity` and embeds `UnityPlayerForActivityOrService`.
-- Make sure the following metadata are set:
+The `UnityActivity` is a native Android activity that loads UnityPlayer.
 
-```csharp
-[MetaData(name: "unityplayer.UnityActivity", Value = "true")]
-[MetaData(name: "notch_support", Value = "true")]
-````
-
-* Declare the activity in `AndroidManifest.xml`:
+Add it to `AndroidManifest.xml`:
 
 ```xml
 <activity
     android:name=".UnityActivity"
     android:label="UnityActivity"
-    android:configChanges="...full config changes here..."
+    android:configChanges="keyboardHidden|orientation|screenSize"
     android:launchMode="singleTask"
     android:resizeableActivity="false">
     <meta-data android:name="unityplayer.UnityActivity" android:value="true"/>
     <meta-data android:name="notch_support" android:value="true"/>
 </activity>
-```
+````
+
+> 📍 Required to support lifecycle management, screen rotation, and correct Unity context binding.
 
 ---
 
-### Step 3: Handle Permissions
+### Step 3: Launch Unity from MAUI
 
-UnityActivity requests camera permissions:
-
-```csharp
-if (CheckSelfPermission(Android.Manifest.Permission.Camera) != Permission.Granted)
-{
-    RequestPermissions(new string[] { Android.Manifest.Permission.Camera }, 1);
-}
-```
-
-You can extend this to support other Android runtime permissions.
-
----
-
-### Step 4: Start Unity Activity from MAUI
-
-From your .NET MAUI app, use dependency services or platform-specific logic to launch the Unity activity:
+Use a platform-specific service or dependency injection to launch Unity:
 
 ```csharp
 var intent = new Intent(Android.App.Application.Context, typeof(UnityActivity));
@@ -111,48 +99,81 @@ Android.App.Application.Context.StartActivity(intent);
 
 ---
 
-### Step 5: Bridge Communication
+### Step 4: Communicate with Unity
 
-`UnityBridge.SendContent(eventName, eventContent)` allows you to send data to Unity like this:
+The `UnityBridge` and `MessageDispatcher` help communicate between MAUI and Unity.
+
+To send a message to Unity:
 
 ```csharp
-UnityPlayer.UnitySendMessage("Bridge", "ReceiveContent", content);
+UnityBridge.SendContent("GameEvent", "PlayerJoined");
 ```
 
-Ensure your Unity script has the `"Bridge"` GameObject with a `ReceiveContent` method.
+Inside Unity, a GameObject named `Bridge` should have a script like:
+
+```csharp
+public class Bridge : MonoBehaviour
+{
+    public void ReceiveContent(string message)
+    {
+        Debug.Log("Message from MAUI: " + message);
+    }
+}
+```
+
+Make sure the `Bridge` GameObject is present in the Unity scene and loaded at start.
+
+---
+
+### Step 5: Handle Permissions (Optional)
+
+UnityActivity requests permissions like camera at runtime:
+
+```csharp
+if (CheckSelfPermission(Android.Manifest.Permission.Camera) != Permission.Granted)
+{
+    RequestPermissions(new string[] { Android.Manifest.Permission.Camera }, 1);
+}
+```
+
+Add other permissions as needed.
 
 ---
 
 ## 🔁 Lifecycle Handling
 
-Unity lifecycle is correctly propagated:
+Your custom `UnityActivity` ensures UnityPlayer follows Android’s activity lifecycle:
 
-* `OnCreate`, `OnResume`, `OnPause`, `OnStop`, `OnDestroy` map to Unity lifecycle.
-* Proper `OnConfigurationChanged`, `OnWindowFocusChanged`, and `OnNewIntent` handling.
-* Input events (touch, key, motion) are forwarded to Unity.
+* `OnCreate`, `OnStart`, `OnResume`, `OnPause`, `OnStop`, `OnDestroy`
+* Configuration changes
+* Window focus
+* Input events (motion, keypress, touch)
+
+These are passed properly to Unity’s `UnityPlayer`.
 
 ---
 
 ## 🧪 Testing
 
-* Run the MAUI app on an Android emulator or device.
-* Use a button or gesture to launch the Unity activity.
-* Verify that Unity starts, responds to input, and communicates via the bridge.
+1. Run the MAUI app on an Android emulator or device.
+2. Use a button or gesture to start Unity.
+3. Interact with the Unity content.
+4. Check that messages are sent from MAUI to Unity and vice versa.
 
 ---
 
-## 📚 Reference Links
+## 📚 Resources
 
 * [Unity: Unity as a Library](https://docs.unity3d.com/Manual/UnityasaLibrary.html)
-* [Microsoft Docs: .NET MAUI](https://learn.microsoft.com/en-us/dotnet/maui/)
-* [Xamarin.Android Activity Guide](https://learn.microsoft.com/en-us/xamarin/android/app-fundamentals/activities/)
+* [.NET MAUI Documentation](https://learn.microsoft.com/en-us/dotnet/maui/)
+* [Unity SendMessage](https://docs.unity3d.com/ScriptReference/GameObject.SendMessage.html)
 
 ---
 
 ## 🙋‍♂️ Author
 
 **Kwanele**
-Contact: \[LinkedIn/GitHub if applicable]
+[GitHub](https://github.com/kwanele09) | [LinkedIn](https://linkedin.com/in/your-profile)
 
 ---
 
@@ -164,5 +185,11 @@ This project is licensed under the MIT License.
 
 ---
 
-Let me know if you'd like to include screenshots, a diagram of the architecture, or instructions for building with Gradle or Unity in CI/CD.
+Would you like me to also generate:
+
+- 📸 Example screenshots or GIFs of Unity inside MAUI?
+- 📦 CI/CD pipeline instructions (e.g., GitHub Actions to build AAR and inject it)?
+- 🧪 Unit testing guidance for the MAUI–Unity interaction?
+
+Let me know what you’d like added or adjusted!
 ```
