@@ -40,7 +40,6 @@ This repository demonstrates how to embed a **Unity Android activity** inside a 
 4. Build and locate the generated `.aar` (usually in `/build/outputs/aar`).
 5. Copy the `.aar` into `Platforms/Android/jars/`.
 
-> ✅ No need to use Gradle. The `.aar` file will be packaged with your MAUI app as a direct reference.
 
 ---
 
@@ -61,8 +60,6 @@ Add it to `AndroidManifest.xml`:
     <meta-data android:name="notch_support" android:value="true"/>
 </activity>
 ````
-
-> 📍 Required to support lifecycle management, screen rotation, and correct Unity context binding.
 
 ---
 
