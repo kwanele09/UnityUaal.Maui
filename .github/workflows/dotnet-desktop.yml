@@ -23,13 +23,13 @@ jobs:
       run: dotnet workload install maui
 
     - name: Restore AndroidBridge project
-      run: dotnet restore AndroidBridge/AndroidBridge.csproj
+      run: dotnet restore AndroidBridge/AndroidBridge/AndroidBridge.csproj
 
     - name: Restore UnityUaal.Maui project
-      run: dotnet restore UnityUaal.Maui/UnityUaal.Maui.csproj
+      run: dotnet restore UnityUaal.Maui/UnityUaal.Maui/UnityUaal.Maui.csproj
 
     - name: Build AndroidBridge project
-      run: dotnet build AndroidBridge/AndroidBridge.csproj -c Release -f net9.0-android --no-restore
+      run: dotnet build AndroidBridge/AndroidBridge/AndroidBridge.csproj -c Release -f net9.0-android --no-restore
 
     - name: Build UnityUaal.Maui project
-      run: dotnet build UnityUaal.Maui/UnityUaal.Maui.csproj -c Release -f net9.0-android --no-restore
+      run: dotnet build /UnityUaal.Maui/UnityUaal.Maui/UnityUaal.Maui.csproj -c Release -f net9.0-android --no-restore
