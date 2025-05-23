@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace UnityUaalMaui.Unity
+﻿namespace UnityUaalMaui.Unity
 {
     public static partial class UnityBridge
     {
